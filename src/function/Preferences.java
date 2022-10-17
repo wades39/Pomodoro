@@ -14,7 +14,7 @@ public class Preferences {
 	 * Indicates whether or not to force breaks by maximizing the window and
 	 * preventing window movement during breaks.
 	 */
-	private boolean FORCE_BREAKS;
+	private static boolean FORCE_BREAKS;
 
 	/**
 	 * Indicates whether or not to render the application in windowed mode or
@@ -22,7 +22,7 @@ public class Preferences {
 	 * 
 	 * True == render with frame decorations, false == undecorated.
 	 */
-	private boolean RENDER_AS_WINDOWED;
+	private static boolean RENDER_AS_WINDOWED;
 
 	/**
 	 * Indicates whether or not to use custom timing for the Pomodoro timer.
@@ -30,5 +30,10 @@ public class Preferences {
 	 * Custom timing means timing is set differently than the standard Pomodoro
 	 * Technique times.
 	 */
-	private boolean USE_CUSTOM_TIMING;
+	private static boolean USE_CUSTOM_TIMING;
+	
+	/**
+	 * Points to the Custom Timing File.
+	 */
+	private static String CUSTOM_TIMING_FILE_LOC;
 }
