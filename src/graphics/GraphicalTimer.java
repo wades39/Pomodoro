@@ -1,5 +1,7 @@
 package graphics;
 
+import java.awt.Color;
+
 /**
  * An interface that defines how graphical timers will function.
  * 
@@ -44,6 +46,6 @@ public interface GraphicalTimer {
 	 *                        setColorTheme("#FFFFFF","#000000","#7F7F7F")
 	 * @return True if a change is made, false otherwise.
 	 */
-	public boolean setColorTheme(boolean useDefaultColors, String... hexColorStrings);
+	public boolean setColorTheme(boolean useDefaultColors, Color... colors);
 
 }
