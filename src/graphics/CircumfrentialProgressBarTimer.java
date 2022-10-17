@@ -27,42 +27,42 @@ public class CircumfrentialProgressBarTimer extends JFrame implements GraphicalT
 	/**
 	 * generated serialVersionUID
 	 */
-	private static final long serialVersionUID = 979316319138638808L;
+	protected static final long serialVersionUID = 979316319138638808L;
 
-	private static final int POINTS_PER_INCH = 72;
+	protected static final int POINTS_PER_INCH = 72;
 
-	private static final double STAGE_TEXT_PERCENTAGE_OF_MIN_DIM = 0.3;
+	protected static final double STAGE_TEXT_PERCENTAGE_OF_MIN_DIM = 0.3;
 
-	private static final double TIME_REMAINING_PERCENT_OF_MIN_DIM = 0.2;
+	protected static final double TIME_REMAINING_PERCENT_OF_MIN_DIM = 0.2;
 
-	private static final String[] DEFAULT_COLORS = { "#2d728f", "#f5cb5c", "#db324d" };
+	protected static final String[] DEFAULT_COLORS = { "#2d728f", "#f5cb5c", "#db324d" };
 
 	/* --| VARIABLES |-- */
 
 	/**
 	 * The time remaining for this timer in ms
 	 */
-	private long timeRemaining;
+	protected long timeRemaining;
 
 	/**
 	 * The target time for this timer in ms
 	 */
-	private long targetTime;
+	protected long targetTime;
 
 	/**
 	 * The current StageText to render
 	 */
-	private String stageText;
+	protected String stageText;
 
 	/**
 	 * Indicates whether or not to use default colors.
 	 */
-	private boolean isUsingDefaultColors;
+	protected boolean isUsingDefaultColors;
 
 	/**
 	 * Stores the color codes that will be used.
 	 */
-	private String[] colorCodes;
+	protected String[] colorCodes;
 
 	/**
 	 * timeRemaining formatted into min:sec.ms format
@@ -78,7 +78,10 @@ public class CircumfrentialProgressBarTimer extends JFrame implements GraphicalT
 	 */
 	public CircumfrentialProgressBarTimer() {
 		super();
-		this.isUsingDefaultColors = true;
+
+		// instantiate to use default colors.
+		colorCodes = new String[] {};
+		setColorTheme(true);
 
 		// these exist to prevent the code from crashing when instantiating the CPBT
 		this.targetTime = 1;
@@ -150,9 +153,9 @@ public class CircumfrentialProgressBarTimer extends JFrame implements GraphicalT
 	 * 
 	 * @return Time-formatted String representation of timeRemaining.
 	 */
-	private String parseTimeString() {
+	protected String parseTimeString() {
 		int min = (int) ((timeRemaining % (60 * 60 * 1000)) / (60 * 1000));
-		double sec = (timeRemaining % (60 * 1000)) / (1000);
+		double sec = (timeRemaining % (60 * 1000)) / (1000.0);
 		return String.format("%02d:", min, sec) + (new DecimalFormat("00.000").format(sec));
 	}
 
@@ -162,7 +165,7 @@ public class CircumfrentialProgressBarTimer extends JFrame implements GraphicalT
 	 * 
 	 * @return
 	 */
-	private Color getColorFromProgress() {
+	protected Color getColorFromProgress() {
 
 		// start with the first color
 		int lastRed = hexToInt(colorCodes[0].substring(1, 3));
@@ -173,7 +176,7 @@ public class CircumfrentialProgressBarTimer extends JFrame implements GraphicalT
 		// timeRemaining/targetTime
 		int i;
 		for (i = 1; i < (colorCodes.length - 1)
-				&& (((double) timeRemaining / (double) targetTime) > 1.0 / ((double) i+1)); i++) {
+				&& (((double) timeRemaining / (double) targetTime) > 1.0 / ((double) i + 1)); i++) {
 			lastRed = hexToInt(colorCodes[i].substring(1, 3));
 			lastGreen = hexToInt(colorCodes[i].substring(1, 3));
 			lastBlue = hexToInt(colorCodes[i].substring(1, 3));
@@ -201,7 +204,7 @@ public class CircumfrentialProgressBarTimer extends JFrame implements GraphicalT
 	 * @param hex - Hex string
 	 * @return Integer decoded from the hexadecimal string.
 	 */
-	private int hexToInt(String hex) {
+	protected int hexToInt(String hex) {
 		return Integer.parseInt(hex, 16);
 	}
 
@@ -212,22 +215,36 @@ public class CircumfrentialProgressBarTimer extends JFrame implements GraphicalT
 	 * @param percent   - The percent expressed in decimal format (30% == 0.3)
 	 * @return Font Size
 	 */
-	private int fontSizeAsPercentOfDimension(int dimension, double percent) {
+	protected int fontSizeAsPercentOfDimension(int dimension, double percent) {
 		return (int) ((POINTS_PER_INCH * dimension * percent) / Toolkit.getDefaultToolkit().getScreenResolution());
 	}
 
 	@Override
 	public void tick(long timeRemaining) {
+		if (timeRemaining > targetTime)
+			throw new IllegalArgumentException("timeRemaining cannot be larger than the target time!");
+		if (timeRemaining < 0)
+			throw new IllegalArgumentException("timeRemaining cannot be negative!");
+
 		this.timeRemaining = timeRemaining;
 		repaint();
 	}
 
 	@Override
 	public boolean setTargetTime(long newTargetTime) {
+		if (newTargetTime < timeRemaining)
+			throw new IllegalArgumentException("newTargetTime cannot be less than timeRemaining!");
+		if (newTargetTime <= 0)
+			throw new IllegalArgumentException("targetTime cannot be <= 0!");
+
 		if (this.targetTime == newTargetTime)
 			return false;
 
 		this.targetTime = newTargetTime;
+
+		if (targetTime < timeRemaining)
+			timeRemaining = targetTime;
+
 		return true;
 	}
 
