@@ -44,6 +44,6 @@ public interface GraphicalTimer {
 	 *                        setColorTheme("#FFFFFF","#000000","#7F7F7F")
 	 * @return True if a change is made, false otherwise.
 	 */
-	public boolean setColorTheme(String... hexColorStrings);
+	public boolean setColorTheme(boolean useDefaultColors, String... hexColorStrings);
 
 }
