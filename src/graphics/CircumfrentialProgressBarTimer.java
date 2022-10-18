@@ -35,7 +35,8 @@ public class CircumfrentialProgressBarTimer extends JFrame implements GraphicalT
 
 	protected static final double TIME_REMAINING_PERCENT_OF_MIN_DIM = 0.2;
 
-	protected static final String[] DEFAULT_COLORS = { "#2d728f", "#f5cb5c", "#db324d" };
+	protected static final Color[] DEFAULT_COLORS = { new Color(45, 114, 143), new Color(245, 203, 92),
+			new Color(219, 50, 77) };
 
 	/* --| VARIABLES |-- */
 
@@ -62,7 +63,7 @@ public class CircumfrentialProgressBarTimer extends JFrame implements GraphicalT
 	/**
 	 * Stores the color codes that will be used.
 	 */
-	protected String[] colorCodes;
+	protected Color[] colorsToUse;
 
 	/**
 	 * timeRemaining formatted into min:sec.ms format
@@ -80,12 +81,13 @@ public class CircumfrentialProgressBarTimer extends JFrame implements GraphicalT
 		super();
 
 		// instantiate to use default colors.
-		colorCodes = new String[] {};
+		colorsToUse = DEFAULT_COLORS;
 		setColorTheme(true);
 
 		// these exist to prevent the code from crashing when instantiating the CPBT
 		this.targetTime = 1;
 		this.timeRemaining = 1;
+		this.stageText = "";
 
 		// set a preferred size to ensure we're always rendering at a size where
 		// everything's legible.
@@ -168,29 +170,40 @@ public class CircumfrentialProgressBarTimer extends JFrame implements GraphicalT
 	protected Color getColorFromProgress() {
 
 		// start with the first color
-		int lastRed = hexToInt(colorCodes[0].substring(1, 3));
-		int lastGreen = hexToInt(colorCodes[0].substring(1, 3));
-		int lastBlue = hexToInt(colorCodes[0].substring(1, 3));
+		int lastRed = colorsToUse[0].getRed();
+		int lastGreen = colorsToUse[0].getGreen();
+		int lastBlue = colorsToUse[0].getBlue();
 
 		// go through the colors in the list until we reach the color i s.t. 1/i <
 		// timeRemaining/targetTime
 		int i;
-		for (i = 1; i < (colorCodes.length - 1)
-				&& (((double) timeRemaining / (double) targetTime) > 1.0 / ((double) i + 1)); i++) {
-			lastRed = hexToInt(colorCodes[i].substring(1, 3));
-			lastGreen = hexToInt(colorCodes[i].substring(1, 3));
-			lastBlue = hexToInt(colorCodes[i].substring(1, 3));
+		for (i = 0; i < (colorsToUse.length+1); i++) {
+			double timeRemOverTarget = (double) timeRemaining / (double) targetTime;
+			double nextColorCutoffValue = i < colorsToUse.length - 1? 1d / Math.pow(2d, i + 1) : -1;
+			if (timeRemOverTarget > nextColorCutoffValue) {
+				lastRed = colorsToUse[i].getRed();
+				lastGreen = colorsToUse[i].getGreen();
+				lastBlue = colorsToUse[i].getBlue();
+				break;
+			}
 		}
-
+		++i;
 		// this is the next color, the one drawn at rem/targ == 1/i
-		int nextRed = hexToInt(colorCodes[i].substring(1, 3));
-		int nextGreen = hexToInt(colorCodes[i].substring(1, 3));
-		int nextBlue = hexToInt(colorCodes[i].substring(1, 3));
+		int nextRed = colorsToUse[Math.min(i, colorsToUse.length - 1)].getRed();
+		int nextGreen = colorsToUse[Math.min(i, colorsToUse.length - 1)].getGreen();
+		int nextBlue = colorsToUse[Math.min(i, colorsToUse.length - 1)].getBlue();
 
 		// find the percentage of each color to take into the calculation of the next
 		// color
-		double percentLastColor = (((double) timeRemaining / (double) targetTime) - (1.0 / i))
-				/ ((1.0 / i) - (1.0 / (i - 1)));
+		double percentLastColor;
+		if (i < colorsToUse.length) {
+			percentLastColor = (timeRemaining - (targetTime / Math.pow(2, i)))
+					/ ((targetTime / Math.pow(2, i - 1)) - (targetTime / Math.pow(2, i)));
+		} else {
+			percentLastColor = 1;
+		}
+
+		// System.out.println("\t" + percentLastColor);
 
 		// calculate and return the new color
 		return new Color((int) ((percentLastColor * lastRed) + ((1 - percentLastColor) * nextRed)),
@@ -199,24 +212,22 @@ public class CircumfrentialProgressBarTimer extends JFrame implements GraphicalT
 	}
 
 	/**
-	 * Converts a hex string to an integer.
-	 * 
-	 * @param hex - Hex string
-	 * @return Integer decoded from the hexadecimal string.
-	 */
-	protected int hexToInt(String hex) {
-		return Integer.parseInt(hex, 16);
-	}
-
-	/**
 	 * Returns a font size as a percentage of a dimension.
 	 * 
 	 * @param dimension - The dimension for the font size to be based on.
-	 * @param percent   - The percent expressed in decimal format (30% == 0.3)
+	 * @param percent   - The percent of the dimension to be the height of the font
+	 *                  as expressed in decimal format (30% == 0.3)
 	 * @return Font Size
 	 */
-	protected int fontSizeAsPercentOfDimension(int dimension, double percent) {
-		return (int) ((POINTS_PER_INCH * dimension * percent) / Toolkit.getDefaultToolkit().getScreenResolution());
+	protected static int fontSizeAsPercentOfDimension(int dimension, double percent) {
+		// round result to fix minor inaccuracies in doubles. Inaccuracies led to some
+		// results
+		// being -1 from expected (e.g. expected 55, got 54)
+
+		// pretty bizarre that mismatches in how doubles round off caused the issue of
+		// failing the test.
+		return (int) Math.round((double) ((double) (POINTS_PER_INCH * dimension * percent)
+				/ (double) Toolkit.getDefaultToolkit().getScreenResolution()));
 	}
 
 	@Override
@@ -257,21 +268,31 @@ public class CircumfrentialProgressBarTimer extends JFrame implements GraphicalT
 	}
 
 	@Override
-	public boolean setColorTheme(boolean useDefaultColors, String... hexColorStrings) {
+	public boolean setColorTheme(boolean useDefaultColors, Color... colors) {
 		if (isUsingDefaultColors && useDefaultColors)
 			return false;
 
-		if (colorCodes.equals(hexColorStrings))
-			return false;
+		boolean allColorsMatch = true;
+		if (colorsToUse.length == colors.length && colors.length > 0) {
+			for (int i = 0; i < colors.length; i++) {
+				allColorsMatch = allColorsMatch && (colors[i].equals(colorsToUse[i]));
+			}
+			if (allColorsMatch)
+				return false;
+		}
 
 		isUsingDefaultColors = useDefaultColors;
 
-		if (isUsingDefaultColors) {
-			colorCodes = DEFAULT_COLORS;
+		if (useDefaultColors) {
+			colorsToUse = DEFAULT_COLORS;
 		} else {
-			colorCodes = hexColorStrings;
+
+			// if colorCodes is empty, throw exception
+			if (colors.length == 0)
+				throw new IllegalArgumentException("Must provide at least one color!");
+
+			colorsToUse = colors;
 		}
 		return true;
 	}
-
 }

@@ -2,7 +2,10 @@ package graphics;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.awt.Color;
+import java.awt.Toolkit;
 import java.util.HashMap;
+import java.util.Random;
 
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +32,7 @@ class CircumfrentialProgressBarTimerTester {
 	void classInstantiatesCorrectly() {
 		testTimer = new CircumfrentialProgressBarTimer();
 		assertEquals(testTimer.isUsingDefaultColors, true);
-		assertEquals(testTimer.colorCodes, CircumfrentialProgressBarTimer.DEFAULT_COLORS);
+		assertEquals(testTimer.colorsToUse, CircumfrentialProgressBarTimer.DEFAULT_COLORS);
 		assertEquals(testTimer.targetTime, 1);
 		assertEquals(testTimer.timeRemaining, 1);
 	}
@@ -153,10 +156,246 @@ class CircumfrentialProgressBarTimerTester {
 		});
 	}
 
-	
-	// stagetext
-	// colorTheme
-	// fontSize
-	// hexToInt
-	// getColorFromProgress (gonna be difficult)
+	/**
+	 * Test to ensure that setStageText works as expected.
+	 */
+	@Test
+	void testSetStageTextOverwritesStageText() {
+		testTimer = new CircumfrentialProgressBarTimer();
+
+		// default stageText should be empty String
+		assertEquals("", testTimer.stageText);
+
+		for (int i = 0; i < 20; i++) {
+			assertTrue(testTimer.setStageText(i + ""));
+			assertEquals(i + "", testTimer.stageText);
+			assertFalse(testTimer.setStageText(i + ""));
+		}
+	}
+
+	/**
+	 * Test to ensure that the colorTheme can be updated with the setColorTheme
+	 * method
+	 */
+	@Test
+	void testSetColorTheme() {
+		testTimer = new CircumfrentialProgressBarTimer();
+
+		// default colorTheme is to use the default colors.
+		assertEquals(CircumfrentialProgressBarTimer.DEFAULT_COLORS, testTimer.colorsToUse);
+
+		// test that usingDefaultColors doesn't change colorsToUse from default, even
+		// when colors are provided.
+		{
+			testTimer.setColorTheme(true);
+			assertEquals(CircumfrentialProgressBarTimer.DEFAULT_COLORS, testTimer.colorsToUse);
+
+			testTimer.setColorTheme(true, new Color(255, 255, 255));
+			assertEquals(CircumfrentialProgressBarTimer.DEFAULT_COLORS, testTimer.colorsToUse);
+
+			testTimer.setColorTheme(true, new Color(255, 255, 255), new Color(0, 0, 0));
+			assertEquals(CircumfrentialProgressBarTimer.DEFAULT_COLORS, testTimer.colorsToUse);
+		}
+
+		// test that when not usingDefaultColors, they're overwritten and that an error
+		// is thrown when no colors are provided.
+		{
+			Color[] cols;
+
+			cols = new Color[] { new Color(255, 255, 255) };
+			testTimer.setColorTheme(false, cols);
+
+			assertEquals(cols.length, testTimer.colorsToUse.length);
+			for (int i = 0; i < cols.length; i++)
+				assertTrue(cols[i].equals(testTimer.colorsToUse[i]));
+
+			cols = new Color[] { new Color(255, 255, 255), new Color(0, 0, 0) };
+			testTimer.setColorTheme(false, new Color(255, 255, 255), new Color(0, 0, 0));
+
+			assertEquals(cols.length, testTimer.colorsToUse.length);
+			for (int i = 0; i < cols.length; i++)
+				assertTrue(cols[i].equals(testTimer.colorsToUse[i]));
+
+			// test that, when overwriting the colorsToUse, exceptions are thrown when no
+			// colors are provided.
+			assertThrows(IllegalArgumentException.class, () -> {
+				testTimer.setColorTheme(false, new Color[] {});
+			});
+
+			assertThrows(IllegalArgumentException.class, () -> {
+				testTimer.setColorTheme(false);
+			});
+
+		}
+
+		testTimer.setColorTheme(true);
+
+		// Test to see that setColorTheme returns the appropriate value when used.
+
+		Color colorToAdd;
+		Random rand = new Random();
+
+		for (int i = 0; i < 100; i++) {
+			colorToAdd = new Color(rand.nextInt(256), rand.nextInt(256), rand.nextInt(256));
+
+			assertTrue(testTimer.setColorTheme(false, colorToAdd));
+			assertFalse(testTimer.setColorTheme(false, colorToAdd));
+
+		}
+	}
+
+	/**
+	 * Test that fontSizeAsAPercentOfDimension works properly.
+	 */
+	@Test
+	void testFontSizeAsPercentOfDimension() {
+		int ppi = 72;
+		int res = Toolkit.getDefaultToolkit().getScreenResolution();
+		int dimHeight = 1000;
+
+		// formula for font size in terms of a pixel count
+		// (ppi * heightInPixels) / screenResolution
+
+		for (int i = 1; i < 1280; i++) {
+
+			// i = ppi * dim * perc / res
+			// res * i = ppi * dim * perc
+			// res * i / ppi / dim = perc
+			double perc = (double) (res * i) / (double) (ppi * dimHeight);
+
+			assertEquals(i, CircumfrentialProgressBarTimer.fontSizeAsPercentOfDimension(dimHeight, perc));
+		}
+	}
+
+	/**
+	 * Tests that getColorFromProgress can find the correct color between two colors
+	 * based on the proportion of the timeRemaining/targetTime.
+	 */
+	@Test
+	void testGetColorFromProgress() {
+
+		testTimer = new CircumfrentialProgressBarTimer();
+
+		long target = 1000;
+
+		testTimer.setTargetTime(target);
+
+		// test with default colors
+		{
+			/*
+			 * CircumfrentialProgressBarTimer has 3 default colors.
+			 * 
+			 * Color progression is as follows: c0:c1 / [100%:50%) c1:c2 / [50%:25%) c2 /
+			 * [25%:0%]
+			 */
+
+			// test for transformation between the first and second colors.
+			for (long i = target; i > target / 2; i--) {
+				// update the timeRemaining
+				testTimer.tick(i);
+
+				Color anticipatedCol = testTimer.getColorFromProgress();
+
+				double ratio = (i - (target / 2d)) / (double) (target - (target / 2d));
+
+				int anticipatedRed = (int) ((ratio * CircumfrentialProgressBarTimer.DEFAULT_COLORS[0].getRed())
+						+ ((1 - ratio) * CircumfrentialProgressBarTimer.DEFAULT_COLORS[1].getRed()));
+				int anticipatedGreen = (int) ((ratio * CircumfrentialProgressBarTimer.DEFAULT_COLORS[0].getGreen())
+						+ ((1 - ratio) * CircumfrentialProgressBarTimer.DEFAULT_COLORS[1].getGreen()));
+				int anticipatedBlue = (int) ((ratio * CircumfrentialProgressBarTimer.DEFAULT_COLORS[0].getBlue())
+						+ ((1 - ratio) * CircumfrentialProgressBarTimer.DEFAULT_COLORS[1].getBlue()));
+
+				assertTrue(new Color(anticipatedRed, anticipatedGreen, anticipatedBlue).equals(anticipatedCol));
+			}
+
+			// test for transformation between the second and third colors.
+			for (long i = target / 2; i > target / 4; i--) {
+				// update the timeRemaining
+				testTimer.tick(i);
+
+				Color anticipatedCol = testTimer.getColorFromProgress();
+
+				double ratio = (i - (target / 4d)) / (double) ((target / 2d) - (target / 4d));
+
+				int anticipatedRed = (int) ((ratio * CircumfrentialProgressBarTimer.DEFAULT_COLORS[1].getRed())
+						+ ((1 - ratio) * CircumfrentialProgressBarTimer.DEFAULT_COLORS[2].getRed()));
+				int anticipatedGreen = (int) ((ratio * CircumfrentialProgressBarTimer.DEFAULT_COLORS[1].getGreen())
+						+ ((1 - ratio) * CircumfrentialProgressBarTimer.DEFAULT_COLORS[2].getGreen()));
+				int anticipatedBlue = (int) ((ratio * CircumfrentialProgressBarTimer.DEFAULT_COLORS[1].getBlue())
+						+ ((1 - ratio) * CircumfrentialProgressBarTimer.DEFAULT_COLORS[2].getBlue()));
+
+				assertTrue(new Color(anticipatedRed, anticipatedGreen, anticipatedBlue).equals(anticipatedCol));
+
+			}
+
+			// test that color doesn't change on last color
+			for (long i = target / 4; i > -1; i--) {
+				testTimer.tick(i);
+
+				Color anticipatedCol = testTimer.getColorFromProgress();
+
+				assertTrue(CircumfrentialProgressBarTimer.DEFAULT_COLORS[2].equals(anticipatedCol));
+			}
+
+			// test that the color doesn't change when it only has one color
+			{
+				testTimer.setColorTheme(false, new Color(255, 0, 0));
+
+				for (long i = target; i > -1; i--) {
+					testTimer.tick(i);
+
+					Color anticipated = testTimer.getColorFromProgress();
+
+					assertTrue(new Color(255, 0, 0).equals(anticipated));
+				}
+			}
+
+			// test that transitioning between two identical colors doesn't result in issues
+			{
+				target = 10;
+				testTimer.setTargetTime(target);
+
+				testTimer.setColorTheme(false, new Color(255, 0, 0), new Color(255, 0, 0));
+
+				for (long i = target; i > -1; i--) {
+					testTimer.tick(i);
+
+					Color anticipated = testTimer.getColorFromProgress();
+
+					assertTrue(new Color(255, 0, 0).equals(anticipated));
+				}
+			}
+
+			// test that transitioning between two different colors locks color at halfway
+			// point
+			{
+				target = 1000;
+				testTimer.setTargetTime(target);
+
+				testTimer.setColorTheme(false, new Color(255, 0, 0), new Color(255, 255, 0));
+
+				for (long i = target; i > target / 2; i--) {
+					testTimer.tick(i);
+
+					Color anticipated = testTimer.getColorFromProgress();
+
+					double ratio = (i - (target / 2d)) / (double) (target - (target / 2d));
+
+					int anticipatedRed = (int) ((ratio * 255) + ((1 - ratio) * 255));
+					int anticipatedGreen = (int) ((ratio * 0) + ((1 - ratio) * 255));
+					int anticipatedBlue = (int) ((ratio * 0) + ((1 - ratio) * 0));
+
+					assertTrue(new Color(anticipatedRed, anticipatedGreen, anticipatedBlue).equals(anticipated));
+				}
+
+				for (long i = target / 2; i > -1; i--) {
+					testTimer.tick(i);
+
+					Color anticipated = testTimer.getColorFromProgress();
+
+					assertTrue(new Color(255, 255, 0).equals(anticipated));
+				}
+			}
+		}
+	}
 }
