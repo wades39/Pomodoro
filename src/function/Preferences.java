@@ -16,7 +16,16 @@ public class Preferences {
 	private static HashMap<String, Object> preferencesMap = new HashMap<>();
 
 	/* --| CONSTANTS |-- */
+
+	/**
+	 * The location of the user's set preferences.
+	 */
 	public static final String USER_PREFERENCE_FILE_LOCATION = "pomodoro_user_prefs.pref";
+
+	/**
+	 * The location of the default preferences that come with the app.
+	 */
+	private static final String DEFAULT_USER_PREFERENCE_FILE_LOCATION = "default_user_prefs.pref";
 
 	/* --| PREFERENCE KEYS |-- */
 
@@ -41,23 +50,48 @@ public class Preferences {
 	public static final String CUSTOM_TIMING_FILE_LOC = "CUSTOM_TIMING_FILE_LOC";
 
 	/* --| FUNCTIONS |-- */
-	
+
+	/**
+	 * Initiates the preferences map with all of the available preferences.
+	 */
 	public static void initPreferences() {
 		setPreference(FORCE_BREAKS, null);
 		setPreference(RENDER_AS_WINDOWED, null);
 		setPreference(USE_CUSTOM_TIMING, null);
 		setPreference(CUSTOM_TIMING_FILE_LOC, null);
-		
+
 	}
 
+	/**
+	 * Retrieves the value for a preference.
+	 * 
+	 * @param key - The preference to search for
+	 * @return True if the preference is instantiated in the map, false otherwise.
+	 */
 	public static boolean doesPrefExist(String key) {
 		return preferencesMap.containsKey(key);
 	}
 
+	/**
+	 * Sets the value of a given preference.
+	 * 
+	 * @param key   - The preference to set.
+	 * @param value - The value of the preference.
+	 * @return The last value associated with the preference.
+	 */
 	public static Object setPreference(String key, Object value) {
+		if (!preferencesMap.containsKey(key))
+			throw new IllegalArgumentException(String.format(
+					"PREFERENCE NOT FOUND:  \"%s\"\nThe provided key does not match any existing Preference.", key));
 		return preferencesMap.put(key, value);
 	}
 
+	/**
+	 * Gets the value of a given preference.
+	 * 
+	 * @param key - The preference to retrieve.
+	 * @return The current value of the requested preference.
+	 */
 	public static Object getPreference(String key) {
 		return preferencesMap.get(key);
 	}

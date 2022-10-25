@@ -1,5 +1,7 @@
 package function;
 
+import graphics.MainWindow;
+
 /**
  * Handles the launching of the application.
  * 
@@ -7,8 +9,6 @@ package function;
  *
  */
 public class Launcher {
-
-	/* --| VARIABLES |-- */
 
 	/* --| ENTRY POINT |-- */
 
@@ -19,17 +19,16 @@ public class Launcher {
 	 */
 	public static void main(String[] args) {
 
+		// indicates whether the user has set their preferences or not.
+		boolean hasPreferences = false;
+
 		// try to load user preferences
 		if (PreferencesLoader.DoesPreferenceFileExist(Preferences.USER_PREFERENCE_FILE_LOCATION)) {
+			hasPreferences = true;
 			PreferencesLoader.LoadPrefs();
 		}
 
-		// if the user preferences haven't been initialized yet, create the user
-		// preferences file
-		else {
-
-		}
-
 		// use the preferences to load the application correctly
+		new MainWindow(hasPreferences);
 	}
 }

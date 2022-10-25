@@ -35,25 +35,31 @@ public class MainWindow implements ComponentListener {
 	/* --| METHODS |-- */
 
 	/**
-	 * Instantiate a MainWindow
+	 * Instantiate and display the MainWindow.
+	 * 
+	 * @param hasPreexistingPreferences - Indicates whether or not the user has
+	 *                                  already set preferences for the app.
 	 */
-	public MainWindow() {
+	public MainWindow(boolean hasPreexistingPreferences) {
+		
 		// boilerplate setup
-		windowFrame = new JDialog();
+		windowFrame = new JDialog((JDialog)null); // hacky trick to get the dialog showing on the taskbar
 		windowFrame.setTitle(WINDOW_TITLE);
 
 		// set up how to handle the window being closed
 		windowFrame.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
 		windowFrame.addComponentListener(this);
 
-		// set up how to handle forced breaks
-		if (breaksAreForced) {
-
-		}
+		/*
+		 * Load Per Preferences
+		 */
 
 		// pack the window and display it to the user
 		windowFrame.pack();
 		windowFrame.setVisible(true);
+
+		if (!hasPreexistingPreferences)
+			new PreferencesSelector(windowFrame);
 	}
 
 	@Override
