@@ -13,7 +13,7 @@ import javax.swing.JDialog;
  * @author wades39
  *
  */
-public class PreferencesSelector implements ComponentListener {
+public class PreferencesSelectorDialog implements ComponentListener {
 
 	/* --| CONSTANTS |-- */
 	private static final String PREFERENCES_SELECTOR_WINDOW_TITLE = "Pomodoro Preferences";
@@ -25,30 +25,31 @@ public class PreferencesSelector implements ComponentListener {
 	 */
 	private JDialog frame;
 
-	private JDialog parent;
-	
 	/* --| METHODS |-- */
 
 	/**
 	 * Instantiate and show the PreferencesSelector
+	 * 
+	 * @param parent - The parent of this dialog
 	 */
-	public PreferencesSelector(JDialog parent) {
+	public PreferencesSelectorDialog(JDialog parent) {
 
-		
 		// boilerplate window setup
 		frame = new JDialog(parent, PREFERENCES_SELECTOR_WINDOW_TITLE, Dialog.ModalityType.APPLICATION_MODAL);
 
 		// handle closing the window
 		frame.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
 		frame.addComponentListener(this);
-		
-		// render listings for all preference options
-		
+
+		// TODO : render listings for all preference options
+
 		// show the window
 		frame.pack();
 		frame.setVisible(true);
 	}
 
+	/*	--| INTERFACE OVERRIDES |--	*/
+	
 	@Override
 	public void componentResized(ComponentEvent e) {
 		// do nothing

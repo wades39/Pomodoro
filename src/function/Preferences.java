@@ -20,12 +20,12 @@ public class Preferences {
 	/**
 	 * The location of the user's set preferences.
 	 */
-	public static final String USER_PREFERENCE_FILE_LOCATION = "pomodoro_user_prefs.pref";
+	public static final String USER_PREFERENCE_FILE_LOCATION = "prefs/pomodoro_user_prefs.pref";
 
 	/**
 	 * The location of the default preferences that come with the app.
 	 */
-	private static final String DEFAULT_USER_PREFERENCE_FILE_LOCATION = "default_user_prefs.pref";
+	protected static final String DEFAULT_USER_PREFERENCE_FILE_LOCATION = "prefs/default_user_prefs.pref";
 
 	/* --| PREFERENCE KEYS |-- */
 

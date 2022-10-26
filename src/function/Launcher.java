@@ -25,10 +25,15 @@ public class Launcher {
 		// try to load user preferences
 		if (PreferencesLoader.DoesPreferenceFileExist(Preferences.USER_PREFERENCE_FILE_LOCATION)) {
 			hasPreferences = true;
-			PreferencesLoader.LoadPrefs();
+			PreferencesLoader.loadPrefs();
+		} 
+		// if there is no existing user preference file, load the default preferences
+		else {
+			PreferencesLoader.loadDefaultPrefs();
 		}
 
-		// use the preferences to load the application correctly
+		// load the MainWindow, displaying the PreferenceSelector dialog if user
+		// preferences not found.
 		new MainWindow(hasPreferences);
 	}
 }

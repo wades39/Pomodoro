@@ -26,12 +26,6 @@ public class MainWindow implements ComponentListener {
 	 */
 	private JDialog windowFrame;
 
-	/**
-	 * Indicates whether the app should force breaks to be taken by going full
-	 * screen and preventing users from working.
-	 */
-	private boolean breaksAreForced;
-
 	/* --| METHODS |-- */
 
 	/**
@@ -41,9 +35,9 @@ public class MainWindow implements ComponentListener {
 	 *                                  already set preferences for the app.
 	 */
 	public MainWindow(boolean hasPreexistingPreferences) {
-		
+
 		// boilerplate setup
-		windowFrame = new JDialog((JDialog)null); // hacky trick to get the dialog showing on the taskbar
+		windowFrame = new JDialog((JDialog) null); // hacky trick to get the dialog showing on the taskbar
 		windowFrame.setTitle(WINDOW_TITLE);
 
 		// set up how to handle the window being closed
@@ -59,9 +53,11 @@ public class MainWindow implements ComponentListener {
 		windowFrame.setVisible(true);
 
 		if (!hasPreexistingPreferences)
-			new PreferencesSelector(windowFrame);
+			new PreferencesSelectorDialog(windowFrame);
 	}
 
+	/*	--| INTERFACE OVERRIDES |--	*/
+	
 	@Override
 	public void componentResized(ComponentEvent e) {
 		// do nothing

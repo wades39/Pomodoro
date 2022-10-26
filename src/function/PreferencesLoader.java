@@ -27,11 +27,11 @@ public class PreferencesLoader {
 	/**
 	 * Loads the preferences into the Preferences class.
 	 */
-	public static void LoadPrefs() {
+	public static void loadPrefs() {
 
 		Preferences.initPreferences();
 
-		// Use a Scanner to read the preferences file
+		// Use a Scanner to read the preferences file into the Preferences class
 		if (DoesPreferenceFileExist(Preferences.USER_PREFERENCE_FILE_LOCATION)) {
 
 			try (Scanner fileIn = new Scanner(new File(Preferences.USER_PREFERENCE_FILE_LOCATION))) {
@@ -47,6 +47,27 @@ public class PreferencesLoader {
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
+		}
+	}
+
+	/**
+	 * Loads the default preferences into the Preferences class.
+	 */
+	public static void loadDefaultPrefs() {
+
+		// read in the default preferences into the Preferences class
+		try (Scanner fileIn = new Scanner(new File(Preferences.DEFAULT_USER_PREFERENCE_FILE_LOCATION))) {
+
+			String line = "";
+			while (fileIn.hasNextLine()) {
+				line = fileIn.nextLine();
+
+				Preferences.setPreference(line.split("|")[0], line.split("|")[1]);
+
+			}
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		}
 	}
 }
