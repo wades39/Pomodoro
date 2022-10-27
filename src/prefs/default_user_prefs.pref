@@ -2,3 +2,4 @@ FORCE_BREAKS|false
 RENDER_AS_WINDOWED|true
 USE_CUSTOM_TIMING|false
 CUSTOM_TIMING_FILE_LOC|null
+TIMER_ALERT_SOUND|resources/sounds/digital_alarm.wav
