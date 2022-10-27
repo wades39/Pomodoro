@@ -40,7 +40,7 @@ public class PreferencesLoader {
 				while (fileIn.hasNextLine()) {
 					line = fileIn.nextLine();
 
-					Preferences.setPreference(line.split("|")[0], line.split("|")[1]);
+					Preferences.setPreference(line.split("\\|")[0], line.split("\\|")[1]);
 
 				}
 
@@ -54,6 +54,8 @@ public class PreferencesLoader {
 	 * Loads the default preferences into the Preferences class.
 	 */
 	public static void loadDefaultPrefs() {
+		
+		Preferences.initPreferences();
 
 		// read in the default preferences into the Preferences class
 		try (Scanner fileIn = new Scanner(new File(Preferences.DEFAULT_USER_PREFERENCE_FILE_LOCATION))) {
@@ -61,8 +63,8 @@ public class PreferencesLoader {
 			String line = "";
 			while (fileIn.hasNextLine()) {
 				line = fileIn.nextLine();
-
-				Preferences.setPreference(line.split("|")[0], line.split("|")[1]);
+				
+				Preferences.setPreference(line.split("\\|")[0], line.split("\\|")[1]);
 
 			}
 
