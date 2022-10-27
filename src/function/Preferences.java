@@ -20,12 +20,12 @@ public class Preferences {
 	/**
 	 * The location of the user's set preferences.
 	 */
-	public static final String USER_PREFERENCE_FILE_LOCATION = "prefs/pomodoro_user_prefs.pref";
+	public static final String USER_PREFERENCE_FILE_LOCATION = JarChecker.isRunningAsJar() ? "prefs/pomodoro_user_prefs.pref" : "src/prefs/pomodoro_user_prefs.pref";
 
 	/**
 	 * The location of the default preferences that come with the app.
 	 */
-	protected static final String DEFAULT_USER_PREFERENCE_FILE_LOCATION = "prefs/default_user_prefs.pref";
+	protected static final String DEFAULT_USER_PREFERENCE_FILE_LOCATION = JarChecker.isRunningAsJar() ? "prefs/default_user_prefs.pref" : "src/prefs/default_user_prefs.pref";
 
 	/* --| PREFERENCE KEYS |-- */
 
@@ -49,17 +49,22 @@ public class Preferences {
 	 */
 	public static final String CUSTOM_TIMING_FILE_LOC = "CUSTOM_TIMING_FILE_LOC";
 
+	/**
+	 * Key for the TIMER_ALERT_SOUND preference
+	 */
+	public static final String TIMER_ALERT_SOUND = "TIMER_ALERT_SOUND";
+	
 	/* --| FUNCTIONS |-- */
 
 	/**
 	 * Initiates the preferences map with all of the available preferences.
 	 */
 	public static void initPreferences() {
-		setPreference(FORCE_BREAKS, null);
-		setPreference(RENDER_AS_WINDOWED, null);
-		setPreference(USE_CUSTOM_TIMING, null);
-		setPreference(CUSTOM_TIMING_FILE_LOC, null);
-
+		preferencesMap.put(FORCE_BREAKS, null);
+		preferencesMap.put(RENDER_AS_WINDOWED, null);
+		preferencesMap.put(USE_CUSTOM_TIMING, null);
+		preferencesMap.put(CUSTOM_TIMING_FILE_LOC, null);
+		preferencesMap.put(TIMER_ALERT_SOUND, null);
 	}
 
 	/**
